@@ -1,0 +1,32 @@
+snnn nnnn nnnn nn00 --- literal
+aaaa aaaa aaaa aa01 --- call
+aaaa aaaa aaaa aa10 --- jump
+aaaa aaaa aaaa a011 --- cond jump
+
+nnnn nnnn pppp 0111 --- ALU imi
+0000 + 
+0001 - 
+0001 lshift 
+0010 rshift
+0010 or
+
+pppp pppp pppp 1111 --- ALU
+
+0000 + 
+0001 xor 
+0010 and 
+0011 or 
+0100 invert 
+0101 = 
+0101 >
+0110 @ 
+0111 !
+1000 r>
+1001 >r
+1010 nip 
+1011 over 
+1100 drop
+1101 dup
+1110 swap 
+1110 exit 
+
