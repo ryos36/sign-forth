@@ -35,6 +35,8 @@ enum vm_opcode {
 	VM_OUT,
 	VM_WAIT,
 
+	VM_CALL,
+
 	VM_DEBUG_NOP,
 	VM_HALT,
 

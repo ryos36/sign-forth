@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "sign_forth.h"
 #include "opcode.h"
 #include "utils.h"
@@ -255,6 +254,14 @@ _top_:
 		break;
 
 	case VM_ZERO_EXIT:
+		check_depth(1);
+		rcheck_depth(1);
+		if ( get_reg(0) == 0 ) {
+			drop_reg();
+			pc = get_rreg0();
+			drop_rreg();
+		}
+		
 		break;
 
 	case VM_INC:
@@ -268,6 +275,18 @@ _top_:
 
 		add_reg_imm(0, -1);
 		break;
+
+	case VM_CALL:
+		rcheck_can_push();
+
+		++pc;
+		reserve_rreg0();
+		set_rreg0(pc);
+
+		pc = image[pc] - 1;
+		break;
+
+		break;
 		
 	case VM_DEBUG_NOP:
 		dump_all();
@@ -277,6 +296,8 @@ _top_:
 		dump_all();
 		panic("halt");
 		break;
+
+
 	default:
 		panic("illegal opcode");
 		break;

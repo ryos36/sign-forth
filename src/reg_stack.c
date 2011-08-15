@@ -1,12 +1,23 @@
 #include "reg_stack.h"
 #include "sign_forth_private.h"
 
-#if 0
-forth_int regs[MAX_REG_N];
-#endif
-
 #define REG(__N__) *(dstackp - (__N__ + 1))
 #define RETURN_REG(__N__) *(rstackp - (__N__ + 1))
+
+struct register_cache {
+	forth_int reg;
+	int valid;
+};
+
+#define INVALID_REG_INDEX -1
+int reg_index[MAX_REG_N] = {
+	INVALID_REG_INDEX, INVALID_REG_INDEX,
+	INVALID_REG_INDEX, INVALID_REG_INDEX,
+	INVALID_REG_INDEX, INVALID_REG_INDEX,
+	INVALID_REG_INDEX, INVALID_REG_INDEX
+};
+
+struct register_cache register_cache[MAX_REG_N];
 
 void reserve_reg0()
 {
