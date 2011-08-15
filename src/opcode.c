@@ -1,14 +1,22 @@
 #include <stdint.h>
 #include "opcode.h"
 
-uint16_t codes[0x10000/sizeof(uint16_t)];
-int16_t *codep;
-int32_t dstack[256];
-int32_t *dstackp;
-int32_t rstack[256];
-int32_t *rstackp;
+typedef uint16_t forth_cell;
+typedef int32_t forth_int;
+#define IMAGE_SIZE 0x10000
+#define CELL_SIZE (sizeof(forth_cell))
 
-static int32_t get_int(uint16_t acode)
+forth_cell codes[IMAGE_SIZE / CELL_SIZE];
+forth_cell *codep;
+
+forth_int dstack[256];
+forth_int *dstackp;
+forth_int rstack[256];
+forth_int *rstackp;
+
+static
+inline 
+int32_t get_int(uint16_t acode)
 {
 	int32_t v;
 

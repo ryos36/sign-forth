@@ -1,0 +1,30 @@
+xxxx-xxxx-xxxx-xx00 PUSH
+xxxx-xxxx-xxxx-xx01 CALL
+xxxx-xxxx-xxxx-xx10 JUMP
+xxxx-xxxx-xxxx-x011 COND_JUMP
+;
+xxxx-xxxx-0000-0111 IMI_PLUS
+xxxx-xxxx-0001-0111 IMI_MINUS
+xxxx-xxxx-0010-0111 IMI_LSHIFT
+xxxx-xxxx-0011-0111 IMI_RSHIFT
+xxxx-xxxx-0100-0111 IMI_OR
+;
+xxxx-xxxx-0000-1111 PLUS
+xxxx-xxxx-0001-1111 XOR
+xxxx-xxxx-0010-1111 AND
+xxxx-xxxx-0011-1111 OR
+xxxx-xxxx-0100-1111 INVERT
+xxxx-xxxx-0101-1111 EQ
+xxxx-xxxx-0110-1111 GT
+xxxx-xxxx-0111-1111 LOAD
+xxxx-xxxx-1000-1111 STORE
+xxxx-xxxx-1001-1111 r>
+xxxx-xxxx-1010-1111 >r
+xxxx-xxxx-1011-1111 NIP
+xxxx-xxxx-1100-1111 OVER
+xxxx-xxxx-1101-1111 DROP
+xxxx-xxxx-1110-1111 DUP
+xxxx-xxxx-1111-1111 SWAP
+;
+;xxxx-xxxx-1101-1111 EXIT
+;xxxx-xxxx-1101-1111 BYE
