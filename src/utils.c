@@ -1,15 +1,9 @@
 #include <stdio.h>
-#include "sign-forth.h"
+#include "sign_forth.h"
 #include "opcode.h"
 #include "utils.h"
 
-extern forth_cell image[];
-extern int32_t pc;
-
-extern forth_int dstack[];
-extern forth_int *dstackp;
-extern forth_int rstack[];
-extern forth_int *rstackp;
+#include "sign_forth_private.h"
 
 //----------------------------------------------------------------
 void
