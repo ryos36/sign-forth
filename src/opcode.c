@@ -1,59 +1,160 @@
-#include <stdint.h>
+#include <stdio.h>
+#include "sign-forth.h"
 #include "opcode.h"
+#include "utils.h"
+#include "stats.h"
 
-typedef uint16_t forth_cell;
-typedef int32_t forth_int;
 #define IMAGE_SIZE 0x10000
 #define CELL_SIZE (sizeof(forth_cell))
 
-forth_cell codes[IMAGE_SIZE / CELL_SIZE];
-forth_cell *codep;
+forth_cell image[IMAGE_SIZE / CELL_SIZE];
+int32_t pc;
 
-forth_int dstack[256];
+#define MAX_DSTACK_N 256
+#define MAX_RSTACK_N 256
+forth_int dstack[MAX_DSTACK_N];
 forth_int *dstackp;
-forth_int rstack[256];
+forth_int rstack[MAX_RSTACK_N];
 forth_int *rstackp;
 
-static
-inline 
-int32_t get_int(uint16_t acode)
+
+//----------------------------------------------------------------
+#define check_can_push() do { \
+	if ( &dstack[MAX_DSTACK_N] <= dstackp ) { \
+		panic("dstack over flow"); \
+	} \
+} while (0);
+
+#define check_depth(n) do { \
+	if ( (dstackp - &dstack[0]) < n ) { \
+		panic("dstack under flow"); \
+	} \
+} while (0);
+
+#define rcheck_can_push() do { \
+	if ( &rstack[MAX_DSTACK_N] <= rstackp ) { \
+		panic("rstack over flow"); \
+	} \
+} while (0);
+
+#define rcheck_depth(n) do { \
+	if ( (rstackp - &rstack[0]) < n ) { \
+		panic("rstack under flow"); \
+	} \
+} while (0);
+
+//----------------------------------------------------------------
+void
+init_image()
 {
-	int32_t v;
-
-	v = (acode & 0x8000) << 16;
-	v |= ((acode & 0x7FFC) >> 2);
-
-	return v;	
+	pc = 0;
+	dstackp = &dstack[0];
+	rstackp = &rstack[0];
 }
 
-void
-opecode()
-{
-	uint16_t acode;
-	acode = *codep;
+//----------------------------------------------------------------
 
-	switch( acode & 0x03 ) {
-	case 0x00:
-		*dstackp = get_int(acode);
-		dstackp++;
+void
+run_image()
+{
+	forth_cell opcode;
+	forth_int tmpi;
+
+_top_:
+	opcode = image[pc];
+	rec_stats(opcode);
+
+	dump_step();
+
+	switch( opcode ) {
+	case VM_NOP:
 		break;
-	case 0x01:
-		*rstackp = codep + 1;
+	case VM_LIT16:
+		check_can_push();
+		++pc;
+		*dstackp = (forth_cell_int)(image[pc]);
+		++dstackp;
+		break;
+
+	case VM_LIT32:
+		check_can_push();
+		++pc;
+		tmpi = image[pc];
+
+		++pc;
+		tmpi = ((image[pc]) << 16) | ( tmpi ); 
+
+		*dstackp = tmpi;
+		++dstackp;
+
+		break;
+
+	case VM_DUP:
+		check_can_push();
+		check_depth(1);
+		*dstackp = *(dstackp - 1);
+		++dstackp;
+		break;
+
+	case VM_DROP:
+		check_depth(1);
+		--dstackp;
+		break;
+
+	case VM_SWAP:
+		check_depth(2);
+
+		tmpi = *(dstackp - 1);
+		*(dstackp - 1) = *(dstackp - 2);
+		*(dstackp - 2) = tmpi;
+		break;
+
+	case VM_PUSH:
+		check_depth(1);
+		rcheck_can_push();
+
+		*rstackp = *(dstackp - 1);
 		++rstackp;
-		codep = (acode >> 2);
+		--dstackp;
 		break;
-	case 0x02:
-		codep = (acode >> 2);
+
+	case VM_POP:
+		rcheck_depth(1);
+		check_can_push();
+
+		*dstackp = *(rstackp - 1);
+		++dstackp;
+		--rstackp;
 		break;
-	case 0x03:
-		if (( acode & 0x4 ) == 0 ) {
-			codep += ((acode & 0xFFF80) >> 3);
+
+	case VM_LOOP:
+		check_depth(1);
+
+		--(*(dstackp -1));
+		++pc;
+		if ((*(dstackp-1)) > 0) {
+			pc = image[pc] - 1;
 		} else {
-			if (( acode & 0x8 ) == 0 ) {
-			} else {
-			}
+			--dstackp;
 		}
+		
+		break;
+		
+	case VM_DEBUG_NOP:
+		dump_all();
+		break;
+
+	case VM_HALT:
+		dump_all();
+		panic("halt");
+		break;
+	default:
+		panic("illegal opcode");
 		break;
 	}
+
+	++pc;
+
+	goto _top_;
 }
 
