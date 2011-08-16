@@ -41,6 +41,27 @@ enum {
 };
 
 int do_sync_flag;
+int do_restore_flag;
+
+int
+search_free_reg_index()
+{
+	struct register_cache *free_rc;
+	int i;
+	for( i = valid_reg_n + 1; i < MAX_REG_N; ++i ) {
+		free_rc = &register_cache[i];
+		if ( free_rc->valid == 0 ) {
+			return i;
+		}
+	}
+	for( i = 0 ; i <= valid_reg_n; ++i ) {
+		free_rc = &register_cache[i];
+		if ( free_rc->valid == 0 ) {
+			return i;
+		}
+	}
+	return INVALID_REG_INDEX;
+}
 
 void 
 do_sync()
@@ -48,9 +69,6 @@ do_sync()
 	struct register_cache *rc;
 	int i;
 
-	if ( do_sync_flag == 0 ) {
-		return;
-	}
 	if ( sync_reg_index == INVALID_REG_INDEX ) {
 		sync_reg_index = valid_reg_n - 1;
 	}
@@ -74,25 +92,48 @@ do_sync()
 	rc->sync = 1;
 }
 
-int
-search_free_reg_index()
+void 
+do_restore()
 {
+	struct register_cache *rc;
+	int free_rc_index;
 	struct register_cache *free_rc;
-	int i;
-	for( i = valid_reg_n + 1; i < MAX_REG_N; ++i ) {
-		free_rc = &register_cache[i];
-		if ( free_rc->valid == 0 ) {
-			return i;
-		}
+
+	if ( valid_reg_n == MAX_REG_N ) {
+		do_restore_flag = 0;
+		return;
 	}
-	for( i = 0 ; i <= valid_reg_n; ++i ) {
-		free_rc = &register_cache[i];
-		if ( free_rc->valid == 0 ) {
-			return i;
-		}
+
+	if ( dstack_index == valid_reg_n ) {
+		do_restore_flag = 0;
+		return;
 	}
-	return INVALID_REG_INDEX;
+
+	free_rc_index = search_free_reg_index();
+	free_rc = &register_cache[free_rc_index];
+
+	free_rc->valid = 1;
+	free_rc->sync = 1;
+	free_rc->dstack_index = dstack_index - valid_reg_n - 1;
+	free_rc->reg = dstack[free_rc->dstack_index];
+
+	reg_index[valid_reg_n] = free_rc_index;
+	++valid_reg_n;
+	if ( valid_reg_n == MAX_REG_N ) {
+		do_restore_flag = 0;
+	}
 }
+
+void 
+do_sync_restore()
+{
+	if ( do_restore_flag ) {
+		do_restore();
+	} else if ( do_sync_flag ) {
+		do_sync();
+	}
+}
+
 
 
 int
@@ -218,6 +259,11 @@ consume_register_cache()
 
 	if (( valid_reg_n <= HIGH_WATER_N ) && 
 	    ( dstack_index != valid_reg_n )) {
+
+		do_restore_flag = 1;
+		do_sync_flag = 0;
+	}
+	    	/*
 		free_rc->valid = 1;
 		free_rc->sync = 1;
 		free_rc->dstack_index = dstack_index - valid_reg_n - 1;
@@ -225,6 +271,8 @@ consume_register_cache()
 		reg_index[valid_reg_n] = free_rc_index;
 		++valid_reg_n;
 	} else {
+		*/
+	{
 		if ( do_sync_flag ) {
 			sync_reg_index = valid_reg_n - 1;
 		}
@@ -241,6 +289,7 @@ void reserve_reg0()
 	}
 	if ( need_push_to_mem()) {
 		do_sync_flag = 1;
+		do_restore_flag = 0;
 	}
 	reserve_register_cache();
 }
@@ -314,20 +363,20 @@ show()
 	printf("push\n");\
 	reserve_reg0(); \
 	set_reg(0, __N__); \
-	do_sync(); \
+	do_sync_restore(); \
 	show(); \
 } while(0);
 
 #define NOP() do { \
 	printf("nop\n");\
-	do_sync(); \
+	do_sync_restore(); \
 	show(); \
 } while(0);
 
 #define POP() do { \
 	printf("pop\n");\
 	drop_reg(); \
-	do_sync(); \
+	do_sync_restore(); \
 	show(); \
 } while(0);
 
@@ -350,8 +399,16 @@ main(int argc, char **argv)
 
 	POP();
 	POP();
+
+	NOP();
+	NOP();
+
 	POP();
 	POP();
+
+	NOP();
+	NOP();
+
 	POP();
 	POP();
 	POP();

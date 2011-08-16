@@ -35,12 +35,17 @@ enum vm_opcode {
 	VM_OUT,
 	VM_WAIT,
 
-	VM_CALL,
-
 	VM_DEBUG_NOP,
 	VM_HALT,
 
-	OPCODE_N
+#if 0
+	VM_SHL12_FLAG = 0x1000,
+	VM_ADD13_FLAG = 0x2000,
+#endif
+	VM_LIT14_FLAG = 0x4000,
+	VM_CALL_FLAG  = 0x8000,
+
+	OPCODE_N = VM_HALT + 1 + 2,
 };
 
 

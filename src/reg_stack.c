@@ -65,6 +65,12 @@ add_reg_imm(int reg_n, int n)
 }
 
 void
+shl_reg_imm(int reg_n, int n)
+{
+	REG(reg_n) <<= n;
+}
+
+void
 add_reg(int reg_n0, int reg_n1, int reg_n2)
 {
 	REG(reg_n0) = REG(reg_n1) + REG(reg_n2);

@@ -44,6 +44,7 @@ _top_:
 	switch( opcode ) {
 	case VM_NOP:
 		break;
+
 	case VM_LIT16:
 		check_can_push();
 		++pc;
@@ -275,31 +276,43 @@ _top_:
 
 		add_reg_imm(0, -1);
 		break;
-
-	case VM_CALL:
-		rcheck_can_push();
-
-		++pc;
-		reserve_rreg0();
-		set_rreg0(pc);
-
-		pc = image[pc] - 1;
-		break;
-
-		break;
 		
 	case VM_DEBUG_NOP:
 		dump_all();
 		break;
 
 	case VM_HALT:
-		dump_all();
-		panic("halt");
+		halt();
 		break;
 
-
 	default:
-		panic("illegal opcode");
+#if 0
+		if (( opcode & 0xF000 ) == VM_SHL12_FLAG ) {
+			shl_reg_imm(0, (forth_cell_int)(opcode & ~0xF000));
+			break;
+		}
+		if (( opcode & 0xE000 ) == VM_ADD13_FLAG ) {
+			add_reg_imm(0, (forth_cell_int)(opcode & ~0xE000));
+			break;
+		}
+#endif
+		if (( opcode & 0xC000 ) == VM_LIT14_FLAG ) {
+			check_can_push();
+			reserve_reg0();
+			set_reg(0, (forth_cell_int)(opcode & ~0xC000));
+			break;
+		}
+
+		if (( opcode & VM_CALL_FLAG ) == 0 ) {
+			panic("illegal opcode");
+			return;
+		}
+
+		rcheck_can_push();
+
+		reserve_rreg0();
+		set_rreg0(pc);
+		pc = (opcode & ~VM_CALL_FLAG) - 1;
 		break;
 	}
 

@@ -2,6 +2,7 @@
 #include "sign_forth.h"
 #include "opcode.h"
 #include "utils.h"
+#include "stats.h"
 
 #include "sign_forth_private.h"
 
@@ -61,3 +62,13 @@ void dump_step()
 	fprintf(stderr, "opcode:0x%04x pc:0x%04x\n", image[pc], pc);
 }
 
+//----------------------------------------------------------------
+void
+halt()
+{
+	dump_all();
+	show_stats();
+	show_stats_mat();
+	fprintf(stderr, "HALT:0x%x\n", pc);
+	exit(255);
+}

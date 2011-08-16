@@ -15,6 +15,8 @@ void drop_reg();
 void swap_reg(int reg_n0, int reg_n1);
 
 void add_reg_imm(int reg_n, int n);
+void shl_reg_imm(int reg_n, int n);
+
 void add_reg(int reg_n0, int reg_n1, int reg_n2);
 void sub_reg(int reg_n0, int reg_n1, int reg_n2);
 void mul_reg(int reg_n0, int reg_n1, int reg_n2);
